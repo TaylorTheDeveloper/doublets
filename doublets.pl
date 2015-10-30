@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #Taylor Brockhoeft
 #Unix Tools
-#Thursday, October 22nd 2015
+#Thursday, October 30nd 2015
 
 use strict;
 
@@ -43,12 +43,21 @@ while ( my $row = <$fh> ) {
 close($fh);
 # END LOAD DICTIONARY ===============================================================================
 
+#initilize a queue for words to process
+my @queue = ($start,$end);
+#Create Two Word Candidates list so we can work back and forth between each side until we come to a solution
+#This should make it faster
+my @candidates = ({$start => []}, {$end => []});
+#Swap between the start word and end word lists
+my $switch = 0; 
+#Contains (or not, I havent tests fake words) the solution
+my @done;
 
-my $string = "foobar";
-my @candidates;
-my @levels;
+until (@done){ #Find the first solution and return it
 
-my @returnfromfindsimilar = ();
+}
+
+
 
 
 my @candids = findsimilar($start);
