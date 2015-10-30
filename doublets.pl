@@ -7,6 +7,25 @@ use strict;
 
 my @wordlist = ();#Loads the dictionary of same length words
 
+# READ AND HANDLE ARGS
+my $count = 0;
+map { $count++ } @ARGV;
+print $count;
+
+# if ($count != 2){ #UNCOMMENT THIS LATER
+# 	die "Must have a start and end word";
+# }
+
+#If enough args, pass them into Argv
+my ($start,$end) = $ARGV;
+
+#If length is not equal, bail
+if (length($start) != length($end)){
+	die "Start and End word length are not equal, exiting program\n";
+}
+# END READ AND HANDLE ARGS
+
+#Temporary for working
 my $start = "chaos";#Default start and end words
 my $end  = "order";
 
@@ -27,6 +46,7 @@ my @candidates;
 my @levels;
 
 my @returnfromfindsimilar = ();
+
 
 sub findsimilar{
 	#findsimilar compares a word to a list of words, and returns ALL the one letter similar words. (for each char in the starting word)
@@ -89,37 +109,3 @@ sub issimilar{
 }
 
 findsimilar($start,@wordlist);
-
-#print "ret",issimilar("chaos","chuas")
-
-# my $currentLevel = "chaos";
-# foreach my $testword (@wordlist) {
-# 	if (issimilar($currentLevel,$testword) != -1){
-# 	#Push it into container
-# 	print "heck yea, $currentLevel \t$testword\n";
-# 	}
-# 	else{
-# 		print "missed, $testword\n";
-# 	}
-
-# }
-
-#foreach my $char (split //, $start) {
-  #foreach my $otherChar (split //, $end){
-  #findsimilar($string,@wordlist)
-  #}
-#}
-
-
-# foreach ( @sorted ) {
-# 	print $_;
-# 	print "\n"
-# }
-
-
-
-	#my @chars = split("",$word);
-	#print @chars[0];
-
-	#my $char = "a";	
-	
