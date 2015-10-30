@@ -7,31 +7,30 @@ use strict;
 
 my @wordlist = ();#Loads the dictionary of same length words
 
-# READ AND HANDLE ARGS
-my $count = 0;
-map { $count++ } @ARGV;
-print $count;
+# READ AND HANDLE ARGS ==============================================================================
+# my $count = 0;
+# map { $count++ } @ARGV;
 
 # if ($count != 2){ #UNCOMMENT THIS LATER
 # 	die "Must have a start and end word";
 # }
 
-#If enough args, pass them into Argv
-my ($start,$end) = $ARGV;
+# #If enough args, pass them into Argv
+# my ($start,$end) = $ARGV;
 
-#If length is not equal, bail
-if (length($start) != length($end)){
-	die "Start and End word length are not equal, exiting program\n";
-}
-# END READ AND HANDLE ARGS
+# #If length is not equal, bail
+# if (length($start) != length($end)){
+# 	die "Start and End word length are not equal, exiting program\n";
+# }
+# END READ AND HANDLE ARGS ==========================================================================
 
 #Temporary for working
-my $start = "chaos";#Default start and end words
-my $end  = "order";
+my $start = "food";#Default start and end words
+my $end  = "gold";
 
+# LOAD THE DICTIONARY FILE  =========================================================================
 my $filename = 'smalllist';
-open(my $fh,'<',$filename)
-	or die "Failed to load '$filename'";
+open(my $fh,'<',$filename) or die "Failed to load '$filename'";
 
 while ( my $row = <$fh> ) {
     chomp( $row );
@@ -41,6 +40,10 @@ while ( my $row = <$fh> ) {
     }
 }
 
+close($fh);
+# END LOAD DICTIONARY ===============================================================================
+
+
 my $string = "foobar";
 my @candidates;
 my @levels;
@@ -48,21 +51,25 @@ my @levels;
 my @returnfromfindsimilar = ();
 
 
-sub findsimilar{
-	#findsimilar compares a word to a list of words, and returns ALL the one letter similar words. (for each char in the starting word)
-	#Init params 
-	my($word,@list) = (@_);
+my @candids = findsimilar($start);
+print "STEP\t@candids\n";
 
-	#Return Array
+sub findsimilar{
+	#findsimilar compares a word to a list of words in wordlist, and returns ALL the one letter similar words. (for each char in the starting word)
+	#Init params 
+	my($word) = (@_);
+
+	#Return Array of candid(ates)
 	my @candid = ();
 
-  		foreach my $query (@list){ #For each word in the dictionary
+  		foreach my $query (@wordlist){ #For each word in the dictionary
 				if (issimilar($word,$query)!=-1){
-					my ($word, $i) = issimilar($word,$query),"\n";	
-					print $word;		
+					#print $word;
+					my ($word, $i) = issimilar($word,$query);	
+					push(@candid,$word);
 				}
 				else{
-					print "$query\n";
+					#print "NOT \t$query\n";
 				}
   		}#first for loop
 	
@@ -75,6 +82,10 @@ sub findsimilar{
 	}
 	my @uniquecandid = keys %unique;
 
+	foreach my $thing (@uniquecandid){
+		#print "$thing\n";
+	}
+
 	return @uniquecandid;
 }
 
@@ -82,25 +93,21 @@ sub issimilar{
 	#Check for one letter difference between two words
 	#returns the word and the index
 	my($word,$other) = (@_);
-	my $count = 0;
 	my @wordsplit = split("",$word);
 	my @othersplit = split("",$other);
 	my $index = 0;
+	my $count = 0;
 
 	#print "\n$word,$other\n";
 
-	for (my $i=0; $i <= 9; $i++) {
-   			if ($wordsplit[$i] eq $othersplit[$i]){
-   				#print "$wordsplit[$i]\t$othersplit[$i]\n";
-   			}
-   			else{
+	for (my $i=0; $i < length $word; $i++) {
+   			if ($wordsplit[$i] ne $othersplit[$i]){
    				$count += 1;
    				$index = $i;
    			}
-
 	}
 	
-	if ($count==1){
+	if ($count==1){#If only one difference, then 
 		#print "return\t$other\t$index";
 		return ($other,$index);
 	}
@@ -108,4 +115,3 @@ sub issimilar{
 	return -1;#Either more than one or no differences
 }
 
-findsimilar($start,@wordlist);
