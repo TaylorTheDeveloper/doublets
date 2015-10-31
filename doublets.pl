@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #Taylor Brockhoeft
 #Unix Tools
-#Thursday, October 30nd 2015
+#Friday, October 30th 2015
 
 use strict;
 
@@ -31,7 +31,7 @@ if (length($start) != length($end)){
 
 
 # LOAD THE DICTIONARY FILE  =========================================================================
-my $filename = 'smalllist';
+my $filename = 'wordlist';
 open(my $fh,'<',$filename) or die "Failed to load '$filename'";
 
 while ( my $row = <$fh> ) {
@@ -51,7 +51,10 @@ close($fh);
 #initilize array queues for words to process
 #start = 0
 #end = 1
-my @queue = ([$start],[$end]);
+
+#my @queue = ([$start],[$end]); #my @queue = ([[$word[0]], 'break'], [[$word[1]], 'break']);
+my @queue = ([[$start]], [[$end]]);
+
 #Create Two Word Candidates list so we can work back and forth between each side until we come to a solution
 #This should make it faster
 my @candidates = ({$start => []}, {$end => []});
@@ -59,54 +62,48 @@ my @candidates = ({$start => []}, {$end => []});
 my $switch = 0; 
 #Contains (or not, I havent tests fake words) the path solution
 my @path;
+                        
 
-until (@path){ #Find the first solution and return it
+while (1) { 
 
-	my $w = shift @{$queue[$switch]};#grab first word on queue (start or end depending on switch)
+    my $w = shift @{$queue[$switch]};#grab first word on queue (start or end depending on switch)
 
-	print "w:$w\n";
+    if ($w) {
+	    my $x = $w->[-1];#since queue is array, derefference
 
-	if ($w){
+	    my @similarwords = findsimilar($x); #Get list of one letter differences   
 
-		#my $r = ref($w);
-		#print "word:$r\n";
-
-		if (ref($w) eq "ARRAY"){
-			#print $w->[-1];
-			$w = $w->[-1]
-		}
-
-	    my @similarwords = findsimilar($w); #Get list of one letter differences 
-
-	    print "$w\t@similarwords\n";
+	    #print "$x\t@similarwords\n";         
 
 	    my $word;
 	    foreach $word (@similarwords) {
-	        if ($candidates[$switch ^ 1]{$word}) {#If it's in the candidate list for the other word, then we've made a complete path
-	            @path = ($w, $word, reverse @{$candidates[$switch ^ 1]{$word}});
+	        if ($candidates[$switch ^ 1]{$word}) { #If it's in the candidate list for the other word, then we've made a complete path
+	            @path = (@$w, $word, reverse @{$candidates[$switch ^ 1]{$word}});
+	            print "solution found @path\n";
 	        }
 
-	        if ($candidates[$switch]{$word}){#If it's in the candidate list for itself, skip it, we dont need it
-	        	print "$word  already in\n";
-	        	next;
-	        }
+            if ($candidates[$switch]{$word}){#If it's in the candidate list for itself, skip it, we dont need it
+	        	#print "$word  already in\n";
+                next;
+            }
 
-	        $candidates[$switch]{$word} = [$w];#Add word to the path
+	        $candidates[$switch]{$word} = [@$w];  #updatecandidate words
 	        
-	        push @{$queue[$switch]}, [$w, $word];#Then add it to the path
+	        push @{$queue[$switch]}, [@$w, $word];  #push new word to queue
 
-	    }	
-	}
-	else{
-		last; #if nothing left, bail
-	}
+	    }
+	                                        
+    }
+    else{
+    	last; #DO A BARREL ROLL
+    }
 
 }
-# END TRY TO FIND PATH OF WORDS =====================================================================
+
 
 if (@path) {# found a path
 	pop @path;#remove the last element because we alreay know what it is and will make print much easier
-    print "$start --> ";
+    #print "$start --> ";
     foreach my $thingamajigger (@path){
     	print "$thingamajigger --> "
     }
@@ -115,6 +112,7 @@ if (@path) {# found a path
 else{
 	print "no path found!\n";
 }
+
 
 
 
