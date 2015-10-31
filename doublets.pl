@@ -8,25 +8,27 @@ use strict;
 my @wordlist = ();#Loads the dictionary of same length words
 
 # READ AND HANDLE ARGS ==============================================================================
-# my $count = 0;
-# map { $count++ } @ARGV;
+my $count = 0;
+map { $count++ } @ARGV;
 
-# if ($count != 2){ #UNCOMMENT THIS LATER
-# 	die "Must have a start and end word";
-# }
+if ($count != 2){ #UNCOMMENT THIS LATER
+	die "Must have a start and end word";
+}
 
-# #If enough args, pass them into Argv
-# my ($start,$end) = $ARGV;
+#If enough args, pass them into Argv
+my $start = $ARGV[0];
+my $end = $ARGV[1];
 
-# #If length is not equal, bail
-# if (length($start) != length($end)){
-# 	die "Start and End word length are not equal, exiting program\n";
-# }
+#If length is not equal, bail
+if (length($start) != length($end)){
+	die "Start and End word length are not equal, exiting program\n";
+}
 # END READ AND HANDLE ARGS ==========================================================================
 
-#Temporary for working
-my $start = "food";#Default start and end words
-my $end  = "gold";
+#Temporary for while working
+#my $ostart = "food";#Default start and end words
+#my $oend  = "gold";
+
 
 # LOAD THE DICTIONARY FILE  =========================================================================
 my $filename = 'smalllist';
@@ -43,25 +45,80 @@ while ( my $row = <$fh> ) {
 close($fh);
 # END LOAD DICTIONARY ===============================================================================
 
-#initilize a queue for words to process
-my @queue = ($start,$end);
+
+
+# TRY TO FIND PATH OF WORDS =========================================================================
+#initilize array queues for words to process
+#start = 0
+#end = 1
+my @queue = ([$start],[$end]);
 #Create Two Word Candidates list so we can work back and forth between each side until we come to a solution
 #This should make it faster
 my @candidates = ({$start => []}, {$end => []});
 #Swap between the start word and end word lists
 my $switch = 0; 
-#Contains (or not, I havent tests fake words) the solution
-my @done;
+#Contains (or not, I havent tests fake words) the path solution
+my @path;
 
-until (@done){ #Find the first solution and return it
+until (@path){ #Find the first solution and return it
 
+	my $w = shift @{$queue[$switch]};#grab first word on queue (start or end depending on switch)
+
+	print "w:$w\n";
+
+	if ($w){
+
+		#my $r = ref($w);
+		#print "word:$r\n";
+
+		if (ref($w) eq "ARRAY"){
+			#print $w->[-1];
+			$w = $w->[-1]
+		}
+
+	    my @similarwords = findsimilar($w); #Get list of one letter differences 
+
+	    print "$w\t@similarwords\n";
+
+	    my $word;
+	    foreach $word (@similarwords) {
+	        if ($candidates[$switch ^ 1]{$word}) {#If it's in the candidate list for the other word, then we've made a complete path
+	            @path = ($w, $word, reverse @{$candidates[$switch ^ 1]{$word}});
+	        }
+
+	        if ($candidates[$switch]{$word}){#If it's in the candidate list for itself, skip it, we dont need it
+	        	print "$word  already in\n";
+	        	next;
+	        }
+
+	        $candidates[$switch]{$word} = [$w];#Add word to the path
+	        
+	        push @{$queue[$switch]}, [$w, $word];#Then add it to the path
+
+	    }	
+	}
+	else{
+		last; #if nothing left, bail
+	}
+
+}
+# END TRY TO FIND PATH OF WORDS =====================================================================
+
+if (@path) {# found a path
+	pop @path;#remove the last element because we alreay know what it is and will make print much easier
+    print "$start --> ";
+    foreach my $thingamajigger (@path){
+    	print "$thingamajigger --> "
+    }
+    print "$end\n";
+}
+else{
+	print "no path found!\n";
 }
 
 
 
-
-my @candids = findsimilar($start);
-print "STEP\t@candids\n";
+exit 0; #done
 
 sub findsimilar{
 	#findsimilar compares a word to a list of words in wordlist, and returns ALL the one letter similar words. (for each char in the starting word)
