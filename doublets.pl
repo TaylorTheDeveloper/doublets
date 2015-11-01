@@ -52,6 +52,8 @@ my @queue = ([[$start]], [[$end]]);
 
 #Create Two Word Candidates list so we can work back and forth between each side until we come to a solution
 #This should make it faster
+	#Currently doesn't actually work from both sides, totatlly forgot I put this comment here. 
+	#Still needs to have second queue to compare end word however. Can be extended in the future easily to work from both sides
 my @candidates = ({$start => []}, {$end => []});
 #Swap between the start word and end word lists
 my $switch = 0; 
